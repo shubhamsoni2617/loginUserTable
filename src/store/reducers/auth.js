@@ -1,13 +1,43 @@
+import  updateObjects  from './utility'
 
 
+const initialState={
+    loading: null,
+    token: null,
+    userId: null,
+    error: false
+}
 
-export default (state={}, action)=>{
+
+const authStart=(state, action)=>{
+    return updateObjects(state, {
+        loading : true
+    })
+}
+
+
+const authSuccess=(state, action)=>{
+    return updateObjects(state, {
+        token: action.payload.token,
+        userId: action.payload.userId,
+        loading : false
+    })
+}
+
+const authFail=(state, action)=>{
+    return updateObjects(state, {
+        token: null,
+        userId: null,
+        loading: null,
+        error: action.payload
+    })
+}
+
+export default (state=initialState, action)=>{
     switch(action.type){
-        case 'LOGIN_SUCCESS':
-            return {...state, userInfo: action.payload}
-        case 'SEARCH_USER':
-            return {...state, totalCount: action.totalCount, users: action.users}
-        default:
-            return state
+        case 'AUTH_START': return authStart(state, action);
+        case 'AUTH_SUCCESS': return authSuccess(state, action);
+        case 'AUTH_FAIL': return authFail(state, action)         
+        default: return state
     }
 }

@@ -1,90 +1,55 @@
 import React, { Component} from 'react';
-import Login from './Login'
-import { Router, Route } from 'react-router-dom'
+import { Router, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import history from '../history';
-import User from './User'
 
-import HomePage from './HomePage';
-import AboutUs from './AboutUs';
-import { searchUser } from '../store/actions/action';
+import { login, userData } from '../store/actions/action'
 
+import UserData from './UserData'
+import Login from './Login'
 
 class App extends Component{
 
-state={
-  input : ''
-}
-  onSubmit=()=>{
 
-    this.props.searchUser(this.state.input)
-
+  onSubmit=(formValues)=>{
+      this.props.login(formValues).then(()=>this.props.userData(this.props.token))
   }
 
   render(){
+     return (
+        <div>
 
-    console.log(this.state.input)
-    let secondApp=null
+          <Router history={history}>
+            <Route path='/' exact render={()=><Login onSubmit={this.onSubmit} authLoading={this.props.authLoading}/>}/>
+            <Route path='/user' exact render={()=><UserData 
+                userDetail={this.props.userDetail} loading={this.props.loading} />}/>
+          </Router>
 
-      let allNames=[]
-
-      let tenNames=[];
-
-    if(this.props.userInfo.totalCount){
-        this.props.userInfo.users.map(name=>{
-              allNames.push(name.login)
-        })
-
-        if(allNames.length>10){
-          for (let i=0; i<=10;i++){
-            tenNames.push(allNames[i])
-          }
-        }
         
-        let listOfTenNames=tenNames.map(name=>
-             <li>{name}</li>
-          )
-      console.log(allNames)
-          secondApp=(
-            <div>
-              <h4>Total users : {this.props.userInfo.totalCount}</h4>
-              {listOfTenNames}
-            </div>
-          )
-    }
-
-    return (<div>
-       <Router history={history}>
-      <div>
+        </div>
+   
         
-        <Route to='/login/user' exact component={Login} />
-        <Route path='/homepage' exact component={HomePage} />
-        <Route path='/about' exact component={AboutUs} />
-        <Route path='/user' exact render={()=><User user={this.props.userInfo}/>} />
-       
-      </div>
-      </Router>
-      <input value={this.state.input} onChange={(e)=>{ this.setState({input :e.target.value})}} />
-        <button onClick={this.onSubmit}>Second App</button>
-          {secondApp}
-    </div>
      
     )
   }
 }
 
-
 const mapStateToProps=(state)=>{
-  console.log(state.auth)
+    console.log(state)
   return {
-    userInfo : state.auth
+    token : state.auth.token,
+    authLoading: state.auth.loading,
+    userDetail: Object.values(state.userDetail.userdata),
+    loading: state.userDetail.loading
   }
 }
 
 const mapDispatchToProps=(dispatch)=>{
   return {
-    searchUser : (queryString)=>dispatch(searchUser(queryString))
+    login : (loginData)=>dispatch(login(loginData)),
+    userData:(token)=>dispatch(userData(token))
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
